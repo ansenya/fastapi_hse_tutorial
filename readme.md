@@ -1,3 +1,7 @@
+## watch in action
+[deploy](http://hipahopa.ru:8000)  
+[bonus](https://hipahopa.ru)
+
 ## deploy
 - ### docker
     ``docker compose up -d``

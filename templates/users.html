@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ShowAllUsers</title>
+    <style>
+        .users {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+        .user {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            border: 1px solid #ccc;
+            padding: 14px;
+            font-size: 13pt;
+        }
+        .id {
+            align-self: center;
+        }
+        .next-page-button {
+            width: 150px;
+            height: 75px;
+            margin-top: 10px;
+            background: #a0e1c2;
+            font-size: 15pt;
+        }
+        .next-page-button:disabled {
+            background: #ccc;  /* Gray out the button when disabled */
+        }
+
+        .prev-page-button {
+            width: 150px;
+            height: 75px;
+            margin-top: 10px;
+            background: #a0e1c2;
+            font-size: 15pt;
+        }
+        .prev-page-button:disabled {
+            background: #ccc;  /* Gray out the button when disabled */
+        }
+    </style>
+</head>
+<body>
+    <div class="users">
+    </div>
+    <button class="next-page-button">Next Page</button>
+    <button class="prev-page-button">Prev Page</button>
+
+<script>
+    let page = 1;
+    let hasMore = false;
+
+    window.onload = async function() {
+        await loadUsers(page);
+    };
+
+    async function loadUsers(page) {
+        try {
+            const response = await fetch(`/users?page=${page}&page_size=5`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch users");
+            }
+            const data = await response.json();
+
+            hasMore = data.hasMore;
+
+            const usersContainer = document.querySelector('.users');
+
+            if (data.items.length === 0 && page === 1) {
+                usersContainer.innerHTML = '<p>Nothing present</p>';
+            } else {
+                usersContainer.innerHTML = '';
+                data.items.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.classList.add('user');
+
+                    userElement.innerHTML = `
+                            <div class="id">${user.id}</div>
+                            <div class="name">name: ${user.name}</div>
+                            <div class="email">email: ${user.email}</div>
+                            <div class="age">age: ${user.age}</div>
+                            <div class="created_at">created_at: ${user.created_at}</div>
+                        `;
+                    usersContainer.appendChild(userElement);
+                });
+            }
+
+            const nextButton = document.querySelector('.next-page-button');
+            if (hasMore) {
+                nextButton.disabled = false;
+            } else {
+                nextButton.disabled = true;
+            }
+
+            const prevButton = document.querySelector('.prev-page-button');
+            if (page > 1) {
+                prevButton.disabled = false;
+            } else {
+                prevButton.disabled = true;
+            }
+
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    }
+
+    document.querySelector('.next-page-button').addEventListener('click', function() {
+        if (hasMore) {
+            page += 1;
+            loadUsers(page);
+        }
+    });
+    document.querySelector('.prev-page-button').addEventListener('click', function() {
+        if (page > 1) {
+            page -= 1;
+            loadUsers(page);
+        }
+    });
+</script>
+</body>
+</html>
